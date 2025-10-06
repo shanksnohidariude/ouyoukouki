@@ -9,12 +9,17 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Arrays;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private SupabaseAuthFilter supabaseAuthFilter;
 
     /**
      * アプリケーション全体のセキュリティ設定を行います
@@ -37,7 +42,8 @@ public class SecurityConfig {
                         , "/api/auth/**"
                     ).permitAll()
                 .anyRequest().authenticated()
-            );
+                )
+            .addFilterBefore(supabaseAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
