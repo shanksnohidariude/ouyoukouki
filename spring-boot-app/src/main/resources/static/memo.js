@@ -4,6 +4,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionData = JSON.parse(localStorage.getItem('user_session'));
     const accessToken = sessionData?.access_token;
 
+    // --- メモ取得処理 ---
+    const fetchMemos = async () => {
+        try {
+            const memos = await apiFetch('/api/memos', {}, accessToken);
+            renderMemos(memos);
+        } catch (error) {
+            showError(error.message);
+        }
+    };
+
     // --- ログイン済の確認 (初期表示時) ---
     (() => {
         if (!accessToken) {
@@ -26,16 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-        // --- メモ取得処理 ---
-    const fetchMemos = async () => {
-        try {
-            const memos = await apiFetch('/api/memos', {}, accessToken);
-            renderMemos(memos);
-        } catch (error) {
-            showError(error.message);
-        }
-    };
-
+    
     // --- メモ作成処理 ---
     const createMemo = async (title, content) => {
         try {
