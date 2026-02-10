@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { SupabaseAuthService } from '@/lib/supabaseAuthService';
-import { useRouter } from 'next/navigation';
-import { apiFetch, errorHandling } from '@/lib/apiFetch';
 
 // ログイン (メール／パスワード)
 export async function POST(req: NextRequest) {

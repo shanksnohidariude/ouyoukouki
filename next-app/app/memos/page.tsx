@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiAuthFetch, errorHandling  } from '@/lib/apiFetch';
 import {
   Card,
   CardContent,
@@ -27,6 +28,7 @@ type Memo = {
 };
 
 export default function MemosPage() {
+  const router = useRouter();
   const [memos, setMemos] = useState<Memo[]>([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -61,8 +63,17 @@ export default function MemosPage() {
   }
 
   async function logout() {
-    window.location.href = '/';  
+    setError('');
+    try {
+      await apiAuthFetch(`/api/auth/logout`, {
+        method: 'POST',
+      });
+    } finally {
+      localStorage.removeItem('user_session');
+      router.push('/');
+    }
   }
+
 
   return (
     <div className="noise-layer">

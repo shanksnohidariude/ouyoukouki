@@ -46,6 +46,3 @@ export async function errorHandling(
     console.error(e);
   }
 }
-
-
-

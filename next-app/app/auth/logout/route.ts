@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { SupabaseAuthService } from '@/lib/supabaseAuthService';
 
 export async function POST() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();  // ← await を追加
   const accessToken = cookieStore.get('sb-access-token')?.value;
 
   if (!accessToken) {
