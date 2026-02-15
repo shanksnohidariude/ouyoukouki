@@ -37,8 +37,12 @@ export default function MemosPage() {
   const [editTitle, setEditTitle] = useState('');
   const [editContent, setEditContent] = useState('');
 
-  async function loadMemos() {
-  }
+  const loadMemos = async () => {
+    await errorHandling(async () => {
+      const json = await apiAuthFetch('/api/memos');
+      setMemos(json);
+    }, setError);
+  };
 
   useEffect(() => {
     (async () => {
@@ -47,20 +51,54 @@ export default function MemosPage() {
   }, []);
 
   async function createMemo() {
-   setError('登録失敗しました。');
+    await errorHandling(async () => {
+      await apiAuthFetch('/api/memos', {
+        method: 'POST',
+        body: JSON.stringify({ title, content }),
+      });
+      await loadMemos();
+    }, setError);
   }
 
   async function deleteMemo(id: number) {
+    await errorHandling(async () => {
+      await apiAuthFetch(`/api/memos/${id}`, {
+        method: 'DELETE',
+      });
+      await loadMemos();
+    }, setError);
   }
 
   function startEdit(memo: Memo) {
+    setEditingId(memo.id);
+    setEditTitle(memo.title);
+    setEditContent(memo.content || '');
   }
 
   function cancelEdit() {
+    setEditingId(null);
+    setEditTitle('');
+    setEditContent('');
   }
 
-  async function updateMemo(id: number) {
+  async function updateMemo() {
+    if (editingId === null) return;
+
+    await errorHandling(async () => {
+      await apiAuthFetch(`/api/memos/${editingId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: editTitle,
+          content: editContent,
+        }),
+      });
+
+      cancelEdit();
+      await loadMemos();
+    }, setError);
   }
+
+
 
   async function logout() {
     setError('');
@@ -204,4 +242,3 @@ export default function MemosPage() {
     </div>
   );
 }
-//TBD：ログアウト処理を作るとこから
