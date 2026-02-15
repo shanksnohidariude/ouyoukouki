@@ -81,8 +81,8 @@ export default function LoginPage() {
     }, setError);
   };
 
-  const loginGithub = () => {
-    window.location.href = '/memos';
+    const loginGithub = () => {
+    window.location.href = '/api/auth/oauth2/github';
   };
 
   return (
