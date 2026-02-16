@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { apiFetch, errorHandling } from '@/lib/apiFetch';
 import {
   TextField,
   Button,
@@ -13,6 +15,7 @@ import {
 import GitHubIcon from '@mui/icons-material/GitHub';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -33,34 +36,53 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    // access_tokenをURLフラグメントから取得
-    const hash = window.location.hash;
-    if (hash) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const errorParam = params.get('error');
-
-      if (errorParam) {
-        window.history.replaceState(null, '', window.location.pathname);
-      } else if (accessToken) {
-        localStorage.setItem('access_token', accessToken);
-        window.location.href = '/memos';
+    (async () => {
+      if (localStorage.getItem('user_session')) {
+        router.push('/memos');
+        return;
       }
-    }
-  }, []);
+      const sessionData = Object.fromEntries(
+        new URLSearchParams(window.location.hash.substring(1))
+      );
+      const accessToken = sessionData?.access_token;
+      if (!accessToken) return;
+      const userData = await apiFetch('/api/auth/user', {}, accessToken);
+      if (userData.email) sessionData.user = userData;
+      localStorage.setItem('user_session', JSON.stringify(sessionData));
+      router.push('/memos');
+    })();
+  }, [router]);
 
   const login = async () => {
-    setSuccessMessage('ログイン成功しました。');
-    // window.location.href = '/memos';
+    await errorHandling(async () => {
+      const json = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!json.access_token || !json.refresh_token) {
+        throw new Error('トークンが取得できませんでした.');
+      }
+      localStorage.setItem('user_session', JSON.stringify(json));
+      router.push('/memos');
+    }, setError);
   };
 
   const register = async () => {
-    setError('ログイン失敗しました。');
-    // window.location.href = '/memos';
+    await errorHandling(async () => {
+      await apiFetch('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      setSuccessMessage(
+        '登録リクエストを送信しました。Supabaseから確認メールが届いているか確認してください。'
+      );
+    }, setError);
   };
 
-  const loginGithub = () => {
-    window.location.href = '/memos';
+    const loginGithub = () => {
+    window.location.href = '/api/auth/oauth2/github';
   };
 
   return (

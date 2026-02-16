@@ -7,3 +7,4 @@ export async function POST(req: NextRequest) {
   const { json, status } = await SupabaseAuthService.login(email, password);
   return NextResponse.json(json, { status });
 }
+
